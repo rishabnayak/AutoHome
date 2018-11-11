@@ -48,6 +48,12 @@
             <input type="text" class="form-control" id="econtact" v-model="econtact">
           </div>
         </div>
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label for="serial">RPi Serial Number</label>
+            <input type="text" class="form-control" id="serial" v-model="serial">
+          </div>
+        </div>
         <hr class="mb-4">
       </form>
       <button :disabled="unavailable||unameempty" class="btn btn-primary btn-lg btn-block col-md-3" type="submit" @click="updateProfile()&&checkAvailability()">Update</button>
@@ -79,7 +85,7 @@ export default {
   },
   methods: {
     async updateProfile() {
-      if (this.city == undefined || this.stt == undefined || this.country == undefined || this.number == undefined || this.econtact == undefined) {
+      if (this.city == undefined || this.stt == undefined || this.country == undefined || this.number == undefined || this.econtact == undefined  || this.serial == undefined) {
         this.fieldempty = true
         return
       } else {
@@ -91,6 +97,7 @@ export default {
           number: this.number,
           econtact: this.econtact,
           uname: this.uname,
+          serial: this.serial
         })
         this.$router.push({
           name: "profile",
@@ -130,7 +137,8 @@ export default {
       available: null,
       unavailable: null,
       unameempty: null,
-      fieldempty: null
+      fieldempty: null,
+      serial: null
     }
   },
   mounted: function() {
@@ -143,6 +151,7 @@ export default {
     this.number = this.user.number
     this.econtact = this.user.econtact
     this.uname = this.user.uname
+    this.serial = this.user.serial
   }
 }
 </script>

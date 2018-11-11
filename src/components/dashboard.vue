@@ -2,35 +2,41 @@
 <main role="main">
   <div class="container">
     <div class="row">
-      <div class="col-sm">
+      <div class="col-sm-6">
         <div class="jumbotron text-center">
-          <p class="text-muted">Wd1</p>
-          {{wd1}}
+          <p class="text-muted">Temperature</p>
+          {{temp}}
         </div>
       </div>
-      <div class="col-sm">
+      <div class="col-sm-6">
         <div class="jumbotron text-center">
-          <p class="text-muted">Wd2</p>
-          {{wd2}}
-        </div>
-      </div>
-      <div class="col-sm">
-        <div class="jumbotron text-center">
-          <p class="text-muted">Wd3</p>
-          {{wd3}}
+          <p class="text-muted">Humidity</p>
+          {{hum}}
         </div>
       </div>
     </div>
     <br>
-    <div v-if="fall">
-      <div class="jumbotron text-center">
-        <h3>Fall Detected!</h3>
-      </div>
-    </div>
-    <br>
-    <div v-if="collide">
-      <div class="jumbotron text-center">
-        <h3>Collision Imminent!</h3>
+    <div class="row">
+      <div class="col-sm">
+        <div class="jumbotron text-center">
+          <h3>User Preferences</h3>
+          <br>
+          <form>
+          <div class="row">
+            <div class="col-md-6">
+              <label for="userTemp">Preferred Temperature</label>
+              <input type="text" class="form-control" id="userTemp" v-model="userTemp">
+            </div>
+            <div class="col-md-6">
+              <label for="userHumidity">Preferred Humidity</label>
+              <input type="text" class="form-control" id="userHumidity" v-model="userHumidity">
+            </div>
+          </div>
+          <hr class="mb-4">
+        </form>
+          <button class="btn btn-primary btn-lg btn-block col-md-3" type="submit" @click="updateProfile()">Set Preference</button>
+          <p v-if="fieldempty" class="red availability">Please fill in all data!</p>
+        </div>
       </div>
     </div>
   </div>
@@ -60,61 +66,55 @@ export default {
   },
   data() {
     return {
-      feedin: null,
-      collide: null,
-      wd1: null,
-      wd2: null,
-      wd3: null,
-      split: null,
-      fall: null,
-      econtact: null
+      temp: null,
+      hum: null,
+      userTemp: null,
+      userHumidity: null,
+      fieldempty: null
     }
   },
   methods: {
-    getFeedin() {
-      axios.get(
-          'https://io.adafruit.com/api/v2/Stepify/feeds/out/data/last', {
-            headers: {
-              'X-AIO-Key': '3a5f9b06eb9047d1a7007d45367a887d',
-              'Content-Type': 'application/json'
-            }
-          }
-        )
-        .then((response) => {
-          this.feedin = response.data.value;
-          this.split = this.feedin.split("'");
-          this.collide = this.split[0]
-          this.wd1 = this.split[1]
-          this.wd2 = this.split[2]
-          this.wd3 = this.split[3]
-          this.fall = this.split[4]
-          if (this.collide == 'Ok') {
-            this.collide = false
-          } else {
-            this.collide = true
-          }
-          if (this.fall == 'falling') {
-            this.fall = true
-          } else {
-            this.fall = false
-          }
-          setTimeout(() => {
-            this.getFeedin()
-          }, 2000)
-        });
+    async updateProfile() {
+      if (this.userTemp == undefined || this.userHumidity == undefined) {
+        this.fieldempty = true
+        return
+      } else {
+        const ref = db.collection('users').doc(this.user.uid)
+        await ref.update({
+          userTemp: this.userTemp,
+          userHumidity: this.userHumidity
+        })
+      }
+    },
+    async updateData(){
+      let ref = await db.collection('users').doc(this.user.uid).get()
+      this.temp = ref.data().temperature
+      this.hum = ref.data().humidity
+      setTimeout(() => {
+            this.updateData()
+      }, 5000)
     }
   },
-  mounted() {
-    this.getFeedin()
-    this.econtact = this.user.econtact
-    axios.post('https://io.adafruit.com/api/v2/Stepify/feeds/econtact/data', {
-      "value": this.user.econtact
-    }, {
-      headers: {
-        'X-AIO-Key': '3a5f9b06eb9047d1a7007d45367a887d',
-        'Content-Type': 'application/json'
-      }
-    })
+  async mounted() {
+    this.updateData()
+    this.userTemp = this.user.userTemp
+    this.userHumidity = this.user.userHumidity
   }
 }
 </script>
+
+
+<style>
+.availability {
+  padding-top: 6px;
+  padding-left: 3px;
+}
+
+.green {
+  color: green;
+}
+
+.red {
+  color: red;
+}
+</style>
