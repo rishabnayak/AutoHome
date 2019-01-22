@@ -13,8 +13,8 @@
       <p class="content">{{number}}</p>
       <h4 class="section-head">Emergency Contact</h4>
       <p class="content">{{econtact}}</p>
-      <h4 class="section-head">RPi Serial Number</h4>
-      <p class="content">{{serial}}</p>
+      <h4 v-if="userCheck" class="section-head">RPi Serial Number</h4>
+      <p  v-if="userCheck" class="content">{{serial}}</p>
       <router-link to="/editprofile">
         <button v-if="userCheck" class="btn btn-primary btn-lg btn-block col-md-3">Update</button>
       </router-link>
